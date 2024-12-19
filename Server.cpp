@@ -41,9 +41,11 @@ void processClientInput(int clientSocket, const string &input);
  * @param clientSocket The client's socket descriptor.
  * @param algorithmName The name of the MST algorithm to use ("Prim" or "Kruskal").
  */
-void computeMSTWithPipeline(int clientSocket, const string& algorithmName) {
+void computeMSTWithPipeline(int clientSocket, const string& algorithmName) 
+{
     // Enqueue the initial task to Stage 1
-    stage1Pipeline->enqueue([clientSocket, algorithmName]() {
+    stage1Pipeline->enqueue([clientSocket, algorithmName]() 
+    {
         // Stage 1: Parsing Stage
         cout << "[Pipeline] Stage 1: Parsing command on Thread "
              << this_thread::get_id() << ".\n";
@@ -52,7 +54,8 @@ void computeMSTWithPipeline(int clientSocket, const string& algorithmName) {
         string algName = algorithmName;
 
         // Pass to Stage 2
-        stage2Pipeline->enqueue([clientSocket, algName]() {
+        stage2Pipeline->enqueue([clientSocket, algName]() 
+        {
             // Stage 2: Computation Stage
             cout << "[Pipeline] Stage 2: Computing MST using " << algName
                  << " on Thread " << this_thread::get_id() << ".\n";
@@ -71,7 +74,8 @@ void computeMSTWithPipeline(int clientSocket, const string& algorithmName) {
             pthread_mutex_unlock(&graphMutex);
 
             // Pass to Stage 3
-            stage3Pipeline->enqueue([clientSocket, algName, mstEdges, computationLog]() {
+            stage3Pipeline->enqueue([clientSocket, algName, mstEdges, computationLog]() 
+            {
                 // Stage 3: Measurement Stage
                 cout << "[Pipeline] Stage 3: Calculating measurements on Thread "
                      << this_thread::get_id() << ".\n";
@@ -137,9 +141,11 @@ void computeMSTWithPipeline(int clientSocket, const string& algorithmName) {
  * To achieve this, it enqueues the computation task to the thread pool, which will execute the task on one of its threads.
  * This allows multiple clients to be handled concurrently.
  */
-void computeMSTWithThreadPool(int clientSocket, const string& algorithmName) {
+void computeMSTWithThreadPool(int clientSocket, const string& algorithmName) 
+{
     // Enqueue the computation task to the thread pool
-    threadPool.enqueueTask([clientSocket, algorithmName]() {
+    threadPool.enqueueTask([clientSocket, algorithmName]() 
+    {
         cout << "[ThreadPool] Computing MST using " << algorithmName
              << " on Thread " << this_thread::get_id() << ".\n";
 
@@ -208,11 +214,9 @@ void *handleClient(void *arg)
     // String to store the line received from the client
     string line;
 
-    // Send a welcome message to the client upon connection
-    string welcomeMessage = "Connected to the server.\n";
-    send(clientSocket, welcomeMessage.c_str(), welcomeMessage.size(), 0);
-    // Send the main menu to the client
+    // Send the menu
     sendMenu(clientSocket);
+
 
     // Continuously handle client requests until disconnection or error
     while (true)
@@ -398,7 +402,7 @@ void processClientInput(int clientSocket, const string &input)
         if (!(edgeStream >> src >> dest >> weight))
         {
             // Handle invalid edge format by notifying the client and prompting again
-            string errorMsg = "Invalid edge format. Please enter edge (src dest weight): ";
+            string errorMsg = "Invalid edge format. Please enter edge (src dest weight (x x x.x)): ";
             send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
             return;
         }

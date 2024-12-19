@@ -35,6 +35,9 @@ int main()
 
     while (true)
     {
+        // Clear buffer for next message
+        std::memset(buffer, 0, sizeof(buffer));
+        
         // Receive message from server
         ssize_t valread = recv(sock, buffer, sizeof(buffer) - 1, 0);
         if (valread <= 0)
@@ -44,20 +47,17 @@ int main()
         }
         buffer[valread] = '\0';
         std::string serverMessage = buffer;
-
         // Display server message
         std::cout << serverMessage;
 
-        // Check if the server is exiting
+
         if (serverMessage.find("Exiting") != std::string::npos)
         {
             break;
         }
-
         // Get user input
         std::string userInput;
         std::getline(std::cin, userInput);
-
         // Send user input to server
         userInput += "\n"; // Add newline character
         send(sock, userInput.c_str(), userInput.size(), 0);

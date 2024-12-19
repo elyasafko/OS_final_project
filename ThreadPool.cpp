@@ -2,6 +2,15 @@
 #include "ThreadPool.h"
 #include <iostream>
 
+/**
+ * @brief Creates a ThreadPool with a specified number of threads.
+ *
+ * The constructor creates a number of worker threads and starts them. The
+ * threads are waiting for tasks to be enqueued and will execute them
+ * sequentially.
+ *
+ * @param threads The number of worker threads to create.
+ */
 ThreadPool::ThreadPool(size_t threads) : stop(false)
 {
     for (size_t i = 0; i < threads; ++i)
