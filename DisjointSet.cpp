@@ -14,6 +14,14 @@ int DisjointSet::find(int u)
     return parent[u];
 }
 
+    /**
+     * Merges the sets containing u and v
+     * 
+     * This performs the union by rank optimization, which means that the tree with
+     * the smaller rank gets attached to the tree with the larger rank. This heuristic
+     * tends to keep the tree balanced, which keeps the time complexity of the find
+     * operation low.
+     */
 void DisjointSet::unite(int u, int v) 
 {
     // Find the root of the set that contains u

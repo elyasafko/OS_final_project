@@ -41,85 +41,91 @@ void processClientInput(int clientSocket, const string &input);
  * @param clientSocket The client's socket descriptor.
  * @param algorithmName The name of the MST algorithm to use ("Prim" or "Kruskal").
  */
-void computeMSTWithPipeline(int clientSocket, const string& algorithmName) 
+void computeMSTWithPipeline(int clientSocket, const string &algorithmName)
 {
     // Enqueue the initial task to Stage 1
-    stage1Pipeline->enqueue([clientSocket, algorithmName]() 
-    {
-        // Stage 1: Parsing Stage
-        cout << "[Pipeline] Stage 1: Parsing command on Thread "
-             << this_thread::get_id() << ".\n";
-        
-        // Copy the algorithm name for use in the next stage
-        string algName = algorithmName;
+    stage1Pipeline->enqueue([clientSocket, algorithmName]()
+                            {
+                                // Stage 1: Parsing Stage
+                                cout << "[Pipeline] Stage 1: Parsing command on Thread "
+                                     << this_thread::get_id() << ".\n";
 
-        // Pass to Stage 2
-        stage2Pipeline->enqueue([clientSocket, algName]() 
-        {
-            // Stage 2: Computation Stage
-            cout << "[Pipeline] Stage 2: Computing MST using " << algName
-                 << " on Thread " << this_thread::get_id() << ".\n";
+                                // Copy the algorithm name for use in the next stage
+                                string algName = algorithmName;
 
-            // Lock the mutex to safely access the shared graph object
-            pthread_mutex_lock(&graphMutex);
+                                // Pass to Stage 2
+                                stage2Pipeline->enqueue([clientSocket, algName]()
+                                                        {
+                                                            // Stage 2: Computation Stage
+                                                            cout << "[Pipeline] Stage 2: Computing MST using " << algName
+                                                                 << " on Thread " << this_thread::get_id() << ".\n";
 
-            // Create the MST algorithm instance based on the provided name
-            auto mstAlgorithm = MSTFactory::createAlgorithm(algName);
+                                                            // Lock the mutex to safely access the shared graph object
+                                                            pthread_mutex_lock(&graphMutex);
 
-            // Compute the Minimum Spanning Tree (MST) and get the computation log
-            auto mstEdges = mstAlgorithm->computeMST(*g);
-            string computationLog = mstAlgorithm->getComputationLog();
+                                                            // Create the MST algorithm instance based on the provided name
+                                                            auto mstAlgorithm = MSTFactory::createAlgorithm(algName);
 
-            // Unlock the mutex after accessing the graph
-            pthread_mutex_unlock(&graphMutex);
+                                                            // Compute the Minimum Spanning Tree (MST) and get the computation log
+                                                            auto mstEdges = mstAlgorithm->computeMST(*g);
+                                                            string computationLog = mstAlgorithm->getComputationLog();
 
-            // Pass to Stage 3
-            stage3Pipeline->enqueue([clientSocket, algName, mstEdges, computationLog]() 
-            {
-                // Stage 3: Measurement Stage
-                cout << "[Pipeline] Stage 3: Calculating measurements on Thread "
-                     << this_thread::get_id() << ".\n";
+                                                            // Unlock the mutex after accessing the graph
+                                                            pthread_mutex_unlock(&graphMutex);
 
-                // Calculate the total weight of the MST
-                double totalWeight = calculateTotalWeight(mstEdges);
+                                                            // Pass to Stage 3
+                                                            stage3Pipeline->enqueue([clientSocket, algName, mstEdges, computationLog]()
+                                                                                    {
+                                                                                        // Stage 3: Measurement Stage
+                                                                                        cout << "[Pipeline] Stage 3: Calculating measurements on Thread "
+                                                                                             << this_thread::get_id() << ".\n";
 
-                // Build a graph representation of the MST
-                Graph mstGraph = buildMSTGraph(g->getNumVertices(), mstEdges);
+                                                                                        // Calculate the total weight of the MST
+                                                                                        double totalWeight = calculateTotalWeight(mstEdges);
 
-                // Calculate the longest and shortest distances in the MST
-                auto distances = calculateDistancesInMST(mstGraph);
+                                                                                        // Build a graph representation of the MST
+                                                                                        Graph mstGraph = buildMSTGraph(g->getNumVertices(), mstEdges);
 
-                // Calculate the average distance in the original graph
-                double averageDistance = calculateAverageDistance(*g);
+                                                                                        // Calculate the longest and shortest distances in the MST
+                                                                                        auto distances = calculateDistancesInMST(mstGraph);
 
-                // Pass to Stage 4
-                stage4Pipeline->enqueue([clientSocket, algName, totalWeight, distances, averageDistance, computationLog]() {
-                    // Stage 4: Response Stage
-                    cout << "[Pipeline] Stage 4: Sending response on Thread "
-                         << this_thread::get_id() << ".\n";
+                                                                                        // Calculate the average distance in the original graph
+                                                                                        double averageDistance = calculateAverageDistance(*g);
 
-                    // Prepare the result message with separators
-                    stringstream result;
-                    result << "\n==== Computation Result ====\n";
-                    result << "Computed using " << algName << " algorithm with Pipeline pattern:\n";
-                    result << "Total Weight of MST: " << totalWeight << "\n";
-                    result << "Longest Distance in MST: " << distances.first << "\n";
-                    result << "Shortest Distance in MST: " << distances.second << "\n";
-                    result << "Average Distance in Graph: " << averageDistance << "\n";
-                    result << "\nComputation Steps:\n" << computationLog;
-                    result << "============================\n";
+                                                                                        // Pass to Stage 4
+                                                                                        stage4Pipeline->enqueue([clientSocket, algName, totalWeight, distances, averageDistance, computationLog]()
+                                                                                                                {
+                                                                                                                    // Stage 4: Response Stage
+                                                                                                                    cout << "[Pipeline] Stage 4: Sending response on Thread "
+                                                                                                                         << this_thread::get_id() << ".\n";
 
-                    // Send the result to the client
-                    send(clientSocket, result.str().c_str(), result.str().size(), 0);
+                                                                                                                    // Prepare the result message with separators
+                                                                                                                    stringstream result;
+                                                                                                                    result << "\n==== Computation Result ====\n";
+                                                                                                                    result << "Computed using " << algName << " algorithm with Pipeline pattern:\n";
+                                                                                                                    result << "Total Weight of MST: " << totalWeight << "\n";
+                                                                                                                    result << "Longest Distance in MST: " << distances.first << "\n";
+                                                                                                                    result << "Shortest Distance in MST: " << distances.second << "\n";
+                                                                                                                    result << "Average Distance in Graph: " << averageDistance << "\n";
+                                                                                                                    result << "\nComputation Steps:\n"
+                                                                                                                           << computationLog;
+                                                                                                                    result << "============================\n";
+                                                                                                                    result << "Please select an option:\n"
+                                                                                                                              "1) Create a new graph\n"
+                                                                                                                              "2) Add an edge\n"
+                                                                                                                              "3) Remove an edge\n"
+                                                                                                                              "4) Compute MST\n"
+                                                                                                                              "5) Exit\n"
+                                                                                                                              "Enter your choice: \n";
+                                                                                                                    // Send the result to the client
+                                                                                                                    send(clientSocket, result.str().c_str(), result.str().size(), 0);
 
-                    // Send the menu again to the client
-                    sendMenu(clientSocket);
-                });  // End of Stage 4
-            });  // End of Stage 3
-        });  // End of Stage 2
-    });  // End of Stage 1
+                                                                                                                    // Send the menu again to the client
+                                                                                                                }); // End of Stage 4
+                                                                                    });                             // End of Stage 3
+                                                        });                                                         // End of Stage 2
+                            });                                                                                     // End of Stage 1
 }
-
 
 /**
  * @brief Computes MST using the Leader-Follower threading model with a thread pool.
@@ -141,11 +147,11 @@ void computeMSTWithPipeline(int clientSocket, const string& algorithmName)
  * To achieve this, it enqueues the computation task to the thread pool, which will execute the task on one of its threads.
  * This allows multiple clients to be handled concurrently.
  */
-void computeMSTWithThreadPool(int clientSocket, const string& algorithmName) 
+void computeMSTWithThreadPool(int clientSocket, const string &algorithmName)
 {
     // Enqueue the computation task to the thread pool
-    threadPool.enqueueTask([clientSocket, algorithmName]() 
-    {
+    threadPool.enqueueTask([clientSocket, algorithmName]()
+                           {
         cout << "[ThreadPool] Computing MST using " << algorithmName
              << " on Thread " << this_thread::get_id() << ".\n";
 
@@ -177,25 +183,24 @@ void computeMSTWithThreadPool(int clientSocket, const string& algorithmName)
             result << "Shortest Distance in MST: " << distances.second << "\n";
             result << "Average Distance in Graph: " << averageDistance << "\n";
             result << "\nComputation Steps:\n" << computationLog;
-            result << "============================\n";
-
+            result << "============================\n\n";
+            result << "Please select an option:\n"
+                        "1) Create a new graph\n"
+                        "2) Add an edge\n"
+                        "3) Remove an edge\n"
+                        "4) Compute MST\n"
+                        "5) Exit\n"
+                        "Enter your choice: \n";
             // Send the result to the client
             send(clientSocket, result.str().c_str(), result.str().size(), 0);
             cout << "[ThreadPool] Sent computation result to client.\n";
-
-            // Send the menu again
-            sendMenu(clientSocket);
-
         } catch (const exception& e) {
             // Unlock the mutex if an exception is thrown
             pthread_mutex_unlock(&graphMutex);
             string errorMsg = string("Error: ") + e.what() + "\n";
             send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
-
-            // Send the menu again
             sendMenu(clientSocket);
-        }
-    });
+        } });
 }
 
 /**
@@ -216,7 +221,6 @@ void *handleClient(void *arg)
 
     // Send the menu
     sendMenu(clientSocket);
-
 
     // Continuously handle client requests until disconnection or error
     while (true)
@@ -271,9 +275,9 @@ void sendMenu(int clientSocket)
 void processClientInput(int clientSocket, const string &input)
 {
     // Static variables to maintain state between function calls
-    static int state = 0; // Tracks the current state of input processing
-    static int n = 0, m = 0, edgeCount = 0; // Graph parameters and edge count
-    static stringstream ss; // Stringstream for parsing input
+    static int state = 0;                        // Tracks the current state of input processing
+    static int n = 0, m = 0, edgeCount = 0;      // Graph parameters and edge count
+    static stringstream ss;                      // Stringstream for parsing input
     static string algorithmName, threadingModel; // Selected algorithm and threading model
 
     istringstream iss(input); // Create input string stream
@@ -336,7 +340,7 @@ void processClientInput(int clientSocket, const string &input)
             // Exit the connection
             string msg = "Exiting...\n";
             send(clientSocket, msg.c_str(), msg.size(), 0);
-            close(clientSocket); // Close client connection
+            close(clientSocket);   // Close client connection
             pthread_exit(nullptr); // Exit the thread
         }
         else
@@ -382,16 +386,16 @@ void processClientInput(int clientSocket, const string &input)
         }
         // Initialize the graph with the specified number of vertices
         pthread_mutex_lock(&graphMutex);
-        delete g; // Delete existing graph if any
+        delete g;         // Delete existing graph if any
         g = new Graph(n); // Create new graph
         pthread_mutex_unlock(&graphMutex);
 
         // Prompt for edge details in specific format
         string prompt = "Enter edges in format: src dest weight (x x x.x)\n";
-        prompt += "Edge 1: ";
+        prompt += "Edge 0: ";
         send(clientSocket, prompt.c_str(), prompt.size(), 0);
         edgeCount = 0; // Reset edge count
-        state = 3; // Change state to collect edges
+        state = 3;     // Change state to collect edges
         break;
     }
     case 3:
@@ -407,20 +411,17 @@ void processClientInput(int clientSocket, const string &input)
             return;
         }
         pthread_mutex_lock(&graphMutex);
-        g->addEdge(src - 1, dest - 1, weight); // Add edge to graph
+        g->addEdge(src, dest, weight); // Add edge to graph
         pthread_mutex_unlock(&graphMutex);
         edgeCount++; // Increment edge count
         if (edgeCount < m)
         {
             // Prompt for the next edge if more are expected
-            string prompt = "Edge " + to_string(edgeCount + 1) + ": ";
+            string prompt = "Edge " + to_string(edgeCount) + ": ";
             send(clientSocket, prompt.c_str(), prompt.size(), 0);
         }
         else
         {
-            // Notify client that graph creation is complete and resend menu
-            string msg = "Created new graph.\n";
-            send(clientSocket, msg.c_str(), msg.size(), 0);
             sendMenu(clientSocket);
             state = 0; // Reset state to wait for the next main menu choice
         }
@@ -452,7 +453,7 @@ void processClientInput(int clientSocket, const string &input)
         }
         pthread_mutex_unlock(&graphMutex);
         sendMenu(clientSocket); // Resend menu
-        state = 0; // Reset state
+        state = 0;              // Reset state
         break;
     }
     case 5:
@@ -480,7 +481,7 @@ void processClientInput(int clientSocket, const string &input)
         }
         pthread_mutex_unlock(&graphMutex);
         sendMenu(clientSocket); // Resend menu
-        state = 0; // Reset state
+        state = 0;              // Reset state
         break;
     }
     case 6:
@@ -577,15 +578,12 @@ void processClientInput(int clientSocket, const string &input)
                 // Perform computation using the Leader-Follower Thread Pool
                 computeMSTWithThreadPool(clientSocket, algorithmName);
             }
-            // Do not send the menu here; it will be sent after computation
             state = 0; // Reset state to wait for the next main menu choice
         }
         else
         {
             pthread_mutex_unlock(&graphMutex);
-            // Notify client that no graph has been created yet and resend menu
-            string msg = "No graph created yet.\n";
-            send(clientSocket, msg.c_str(), msg.size(), 0);
+
             sendMenu(clientSocket);
             state = 0; // Reset state
         }

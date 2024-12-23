@@ -50,6 +50,17 @@ ThreadPool::ThreadPool(size_t threads) : stop(false)
     }
 }
 
+/**
+ * @brief Enqueues a task for execution by one of the worker threads.
+ *
+ * This function adds a task to the task queue and notifies one waiting
+ * thread that a new task is available. If the pool is stopped, it is not
+ * possible to enqueue new tasks.
+ *
+ * @param task The task to enqueue.
+ *
+ * @exception std::runtime_error If the pool is stopped.
+ */
 void ThreadPool::enqueueTask(std::function<void()> task)
 {
     // Acquire a lock to ensure thread safety while modifying the task queue
@@ -68,6 +79,14 @@ void ThreadPool::enqueueTask(std::function<void()> task)
     condition.notify_one();
 }
 
+/**
+ * @brief Stops the ThreadPool and waits for all threads to finish.
+ *
+ * This destructor sets a stop flag to signal to all threads that they should stop
+ * and notifies all waiting threads that the pool is stopped and that there may be
+ * tasks available to process. This will cause all threads to exit the loop.
+ * Finally, it waits for all threads to finish by calling join on each thread.
+ */
 ThreadPool::~ThreadPool()
 {
     // Acquire a lock to ensure thread safety when stopping the thread pool

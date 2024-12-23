@@ -4,6 +4,20 @@
 #include <functional>
 #include <sstream>
 
+/**
+ * @brief Computes the Minimum Spanning Tree (MST) of a graph using Prim's algorithm.
+ * 
+ * This function implements Prim's algorithm to find the MST of the given graph.
+ * It starts from vertex 0 and proceeds to add the smallest edge connecting a 
+ * vertex inside the MST to a vertex outside the MST until the MST spans all 
+ * vertices. The function maintains a priority queue to efficiently select the 
+ * next edge with the minimum weight.
+ * 
+ * @param graph The input graph represented as an adjacency list.
+ * 
+ * @return A vector of edges representing the MST of the input graph.
+ */
+
 std::vector<Edge> PrimAlgorithm::computeMST(Graph &graph)
 {
     size_t V = graph.getNumVertices();

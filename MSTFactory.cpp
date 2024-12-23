@@ -17,4 +17,5 @@ MSTAlgorithm *MSTFactory::createAlgorithm(const std::string &name)
     {
         return nullptr;
     }
+    // in case we would like to add more algorithms in the future, we can add them here.
 }

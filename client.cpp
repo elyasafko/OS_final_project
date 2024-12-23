@@ -55,6 +55,7 @@ int main()
         {
             break;
         }
+        
         // Get user input
         std::string userInput;
         std::getline(std::cin, userInput);

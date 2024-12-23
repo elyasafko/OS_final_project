@@ -1,6 +1,6 @@
 // Graph.cpp
 #include "Graph.h"
-#include <algorithm> // Add this line to include std::remove_if
+#include <algorithm>
 
 Graph::Graph(int vertices) : V(vertices), adjList(vertices) {}
 

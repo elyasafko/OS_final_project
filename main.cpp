@@ -90,6 +90,7 @@ int main()
                                {
             int* clientSocketPtr = new int(clientSocket);
             handleClient((void*)clientSocketPtr); });
+
     }
 
     // Clean up (this code is unreachable unless the server is terminated)
