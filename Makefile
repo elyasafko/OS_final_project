@@ -1,7 +1,7 @@
 # Makefile
 
 CXX = g++
-CXXFLAGS = -std=c++14 -pthread -Wall -Wextra -g
+CXXFLAGS = -std=c++14 -pthread -Wall -Wextra -g -fprofile-arcs -ftest-coverage # -g for valgrind , -fprofile-arcs -ftest-coverage for gcov (code coverage)
 
 SERVER_SRCS = main.cpp Server.cpp Graph.cpp PrimAlgorithm.cpp KruskalAlgorithm.cpp MSTFactory.cpp Measurements.cpp DisjointSet.cpp ThreadPool.cpp ActiveObject.cpp
 SERVER_OBJS = $(SERVER_SRCS:.cpp=.o)
