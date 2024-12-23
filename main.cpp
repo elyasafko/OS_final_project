@@ -12,8 +12,10 @@ const int PORT = 9034;
 using namespace std;
 
 // Define the ThreadPool and ActiveObject pointers
-ThreadPool threadPool(4);
+ThreadPool threadPool(4); // 4 threads in the thread pool, used for computation tasks in the Leader-Follower model
 
+
+// Define the ActiveObject pointers for the pipeline stages, used in the Pipeline model
 ActiveObject *stage1Pipeline;
 ActiveObject *stage2Pipeline;
 ActiveObject *stage3Pipeline;

@@ -42,7 +42,7 @@ static std::vector<double> dijkstraDistances(const Graph &graph, int start)
 }
 
 // ---------------------------------------------------
-// 1) Calculate total weight
+// Calculate total weight
 double calculateTotalWeight(const std::vector<Edge> &edges)
 {
     double total = 0.0;
@@ -53,7 +53,7 @@ double calculateTotalWeight(const std::vector<Edge> &edges)
     return total;
 }
 
-// 2) Build MST graph from MST edges
+// Build MST graph from MST edges
 Graph buildMSTGraph(int numVertices, const std::vector<Edge> &edges)
 {
     Graph mst(numVertices);
@@ -64,7 +64,7 @@ Graph buildMSTGraph(int numVertices, const std::vector<Edge> &edges)
     return mst;
 }
 
-// 3) Calculate distances in MST (longest and shortest among all distinct pairs)
+// Calculate distances in MST (longest and shortest among all distinct pairs)
 std::pair<double, double> calculateDistancesInMST(const Graph &mst)
 {
     int n = mst.getNumVertices();
@@ -103,7 +103,7 @@ std::pair<double, double> calculateDistancesInMST(const Graph &mst)
     return {maxDist, minDist};
 }
 
-// 4) Calculate average distance over all pairs in a general graph
+// Calculate average distance over all pairs in a general graph
 double calculateAverageDistance(const Graph &graph)
 {
     int n = graph.getNumVertices();

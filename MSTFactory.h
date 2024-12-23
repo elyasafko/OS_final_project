@@ -5,9 +5,10 @@
 #include <string>
 #include "MSTAlgorithm.h"
 
-class MSTFactory {
+class MSTFactory
+{
 public:
-    static MSTAlgorithm* createAlgorithm(const std::string& name);
+    static MSTAlgorithm *createAlgorithm(const std::string &name);
 };
 
 #endif // MSTFACTORY_H

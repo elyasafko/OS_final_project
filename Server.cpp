@@ -56,7 +56,7 @@ void computeMSTWithPipeline(int clientSocket, const string &algorithmName)
                                 // Pass to Stage 2
                                 stage2Pipeline->enqueue([clientSocket, algName]()
                                                         {
-                                                            // Stage 2: Computation Stage
+                                                            // Stage 2: Computation Stage - Compute MST
                                                             cout << "[Pipeline] Stage 2: Computing MST using " << algName
                                                                  << " on Thread " << this_thread::get_id() << ".\n";
 
@@ -73,7 +73,7 @@ void computeMSTWithPipeline(int clientSocket, const string &algorithmName)
                                                             // Unlock the mutex after accessing the graph
                                                             pthread_mutex_unlock(&graphMutex);
 
-                                                            // Pass to Stage 3
+                                                            // Pass to Stage 3 - Measurements
                                                             stage3Pipeline->enqueue([clientSocket, algName, mstEdges, computationLog]()
                                                                                     {
                                                                                         // Stage 3: Measurement Stage
@@ -92,7 +92,7 @@ void computeMSTWithPipeline(int clientSocket, const string &algorithmName)
                                                                                         // Calculate the average distance in the original graph
                                                                                         double averageDistance = calculateAverageDistance(*g);
 
-                                                                                        // Pass to Stage 4
+                                                                                        // Pass to Stage 4 - Response
                                                                                         stage4Pipeline->enqueue([clientSocket, algName, totalWeight, distances, averageDistance, computationLog]()
                                                                                                                 {
                                                                                                                     // Stage 4: Response Stage
@@ -109,7 +109,7 @@ void computeMSTWithPipeline(int clientSocket, const string &algorithmName)
                                                                                                                     result << "Average Distance in Graph: " << averageDistance << "\n";
                                                                                                                     result << "\nComputation Steps:\n"
                                                                                                                            << computationLog;
-                                                                                                                    result << "============================\n";
+                                                                                                                    result << "============================\n\n";
                                                                                                                     result << "Please select an option:\n"
                                                                                                                               "1) Create a new graph\n"
                                                                                                                               "2) Add an edge\n"
@@ -140,9 +140,8 @@ void computeMSTWithPipeline(int clientSocket, const string &algorithmName)
  * 4. It computes the MST using the selected algorithm and logs the computation steps.
  * 5. It performs some measurements on the MST (total weight, longest and shortest distances, average distance).
  * 6. It prepares a response string that includes the measurements and the computation steps.
- * 7. It sends the response string to the client.
- * 8. It sends the main menu to the client again.
- * 9. If an exception is thrown during the computation, it catches it, unlocks the mutex, and sends an error message to the client.
+ * 7. It sends the response string and the main menu to the client.
+ * 8. If an exception is thrown during the computation, it catches it, unlocks the mutex, and sends an error message to the client.
  *
  * To achieve this, it enqueues the computation task to the thread pool, which will execute the task on one of its threads.
  * This allows multiple clients to be handled concurrently.

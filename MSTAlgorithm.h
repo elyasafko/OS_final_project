@@ -7,10 +7,11 @@
 #include "Edge.h"
 #include "Graph.h"
 
-class MSTAlgorithm {
+class MSTAlgorithm
+{
 public:
-    virtual std::vector<Edge> computeMST(Graph& graph) = 0;
-    virtual std::string getComputationLog() const = 0;  // Added method
+    virtual std::vector<Edge> computeMST(Graph &graph) = 0;
+    virtual std::string getComputationLog() const = 0; // Added method
     virtual ~MSTAlgorithm() {}
 };
 

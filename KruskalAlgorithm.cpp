@@ -3,6 +3,24 @@
 #include <algorithm>
 #include <sstream>
 
+/**
+ * @brief Computes the Minimum Spanning Tree (MST) of a graph using Kruskal's algorithm.
+ *
+ * This function implements Kruskal's algorithm to find the MST of the given graph.
+ * It first collects all edges in the graph and sorts them by weight.
+ * Then it repeatedly selects the edge with the minimum weight that does not form
+ * a cycle in the MST, until the MST spans all vertices.
+ *
+ * The function also maintains a log of the computation steps, which can be retrieved
+ * using getComputationLog().
+ * 
+ * we use disjoint set data structure.
+ * its suits well for this algorithm because its head is always the lowest node in the tree.
+ *
+ * @param graph The input graph represented as an adjacency list.
+ *
+ * @return A vector of edges representing the MST of the input graph.
+ */
 std::vector<Edge> KruskalAlgorithm::computeMST(Graph &graph)
 {
     size_t V = graph.getNumVertices();
