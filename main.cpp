@@ -4,6 +4,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <cstring>
+
 #include "Server.h"
 #include "ActiveObject.h"
 
@@ -13,7 +14,6 @@ using namespace std;
 
 // Define the ThreadPool and ActiveObject pointers
 ThreadPool threadPool(4); // 4 threads in the thread pool, used for computation tasks in the Leader-Follower model
-
 
 // Define the ActiveObject pointers for the pipeline stages, used in the Pipeline model
 ActiveObject *stage1Pipeline;
@@ -92,7 +92,6 @@ int main()
                                {
             int* clientSocketPtr = new int(clientSocket);
             handleClient((void*)clientSocketPtr); });
-
     }
 
     // Clean up (this code is unreachable unless the server is terminated)

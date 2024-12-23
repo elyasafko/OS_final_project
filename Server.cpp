@@ -9,6 +9,8 @@
 #include <cstring>
 #include <algorithm>
 #include <thread>
+#include <csignal>    // For signal handling
+#include <atomic>     // For atomic flags
 
 #include "Server.h"
 #include "Graph.h"
@@ -33,6 +35,7 @@ extern ActiveObject *stage4Pipeline;
 // Function prototypes
 void sendMenu(int clientSocket);
 void processClientInput(int clientSocket, const string &input);
+
 
 // Function definitions
 
@@ -442,8 +445,6 @@ void processClientInput(int clientSocket, const string &input)
         if (g)
         {
             g->addEdge(src - 1, dest - 1, weight); // Add edge to graph
-            string msg = "Edge added.\n";
-            send(clientSocket, msg.c_str(), msg.size(), 0);
         }
         else
         {
@@ -470,8 +471,6 @@ void processClientInput(int clientSocket, const string &input)
         if (g)
         {
             g->removeEdge(src - 1, dest - 1); // Remove edge from graph
-            string msg = "Edge removed.\n";
-            send(clientSocket, msg.c_str(), msg.size(), 0);
         }
         else
         {
