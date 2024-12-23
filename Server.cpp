@@ -9,8 +9,8 @@
 #include <cstring>
 #include <algorithm>
 #include <thread>
-#include <csignal>    // For signal handling
-#include <atomic>     // For atomic flags
+#include <csignal> // For signal handling
+#include <atomic>  // For atomic flags
 
 #include "Server.h"
 #include "Graph.h"
@@ -35,7 +35,6 @@ extern ActiveObject *stage4Pipeline;
 // Function prototypes
 void sendMenu(int clientSocket);
 void processClientInput(int clientSocket, const string &input);
-
 
 // Function definitions
 
@@ -158,51 +157,43 @@ void computeMSTWithThreadPool(int clientSocket, const string &algorithmName)
              << " on Thread " << this_thread::get_id() << ".\n";
 
         // Lock the mutex to ensure that only one thread can access the graph at a time
-        pthread_mutex_lock(&graphMutex);
-        try {
             // Create an MST algorithm using the provided algorithm name
             auto mstAlgorithm = MSTFactory::createAlgorithm(algorithmName);
 
-            // Compute MST and log steps
-            auto mstEdges = mstAlgorithm->computeMST(*g);
-            string computationLog = mstAlgorithm->getComputationLog();
+        pthread_mutex_lock(&graphMutex);
+        // Compute MST and log steps
+        auto mstEdges = mstAlgorithm->computeMST(*g);
+        string computationLog = mstAlgorithm->getComputationLog();
 
-            // Perform measurements
-            double totalWeight = calculateTotalWeight(mstEdges);
-            Graph mstGraph = buildMSTGraph(g->getNumVertices(), mstEdges);
-            auto distances = calculateDistancesInMST(mstGraph);
-            double averageDistance = calculateAverageDistance(*g);
+        // Perform measurements
+        double totalWeight = calculateTotalWeight(mstEdges);
+        Graph mstGraph = buildMSTGraph(g->getNumVertices(), mstEdges);
+        auto distances = calculateDistancesInMST(mstGraph);
+        double averageDistance = calculateAverageDistance(*g);
 
-            // Unlock the mutex so that other threads can access the graph
-            pthread_mutex_unlock(&graphMutex);
+        // Unlock the mutex so that other threads can access the graph
+        pthread_mutex_unlock(&graphMutex);
 
-            // Prepare the result with separators
-            stringstream result;
-            result << "\n==== Computation Result ====\n";
-            result << "Computed using " << algorithmName << " algorithm with Leader-Follower Thread Pool:\n";
-            result << "Total Weight of MST: " << totalWeight << "\n";
-            result << "Longest Distance in MST: " << distances.first << "\n";
-            result << "Shortest Distance in MST: " << distances.second << "\n";
-            result << "Average Distance in Graph: " << averageDistance << "\n";
-            result << "\nComputation Steps:\n" << computationLog;
-            result << "============================\n\n";
-            result << "Please select an option:\n"
-                        "1) Create a new graph\n"
-                        "2) Add an edge\n"
-                        "3) Remove an edge\n"
-                        "4) Compute MST\n"
-                        "5) Exit\n"
-                        "Enter your choice: \n";
-            // Send the result to the client
-            send(clientSocket, result.str().c_str(), result.str().size(), 0);
-            cout << "[ThreadPool] Sent computation result to client.\n";
-        } catch (const exception& e) {
-            // Unlock the mutex if an exception is thrown
-            pthread_mutex_unlock(&graphMutex);
-            string errorMsg = string("Error: ") + e.what() + "\n";
-            send(clientSocket, errorMsg.c_str(), errorMsg.size(), 0);
-            sendMenu(clientSocket);
-        } });
+        // Prepare the result with separators
+        stringstream result;
+        result << "\n==== Computation Result ====\n";
+        result << "Computed using " << algorithmName << " algorithm with Leader-Follower Thread Pool:\n";
+        result << "Total Weight of MST: " << totalWeight << "\n";
+        result << "Longest Distance in MST: " << distances.first << "\n";
+        result << "Shortest Distance in MST: " << distances.second << "\n";
+        result << "Average Distance in Graph: " << averageDistance << "\n";
+        result << "\nComputation Steps:\n" << computationLog;
+        result << "============================\n\n";
+        result << "Please select an option:\n"
+                    "1) Create a new graph\n"
+                    "2) Add an edge\n"
+                    "3) Remove an edge\n"
+                    "4) Compute MST\n"
+                    "5) Exit\n"
+                    "Enter your choice: \n";
+        // Send the result to the client
+        send(clientSocket, result.str().c_str(), result.str().size(), 0);
+        cout << "[ThreadPool] Sent computation result to client.\n"; });
 }
 
 /**
